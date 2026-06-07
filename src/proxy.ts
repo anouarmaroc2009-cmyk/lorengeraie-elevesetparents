@@ -6,7 +6,7 @@ export async function proxy(request: NextRequest) {
   const session = await auth()
   const { pathname } = request.nextUrl
 
-  const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register")
+  const isAuthPage = pathname.startsWith("/login")
   const isPublic = pathname === "/" || pathname.startsWith("/api")
 
   if (!session && !isPublic && !isAuthPage) {

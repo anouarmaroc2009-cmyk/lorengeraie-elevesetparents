@@ -62,18 +62,12 @@ export default async function Home() {
               </form>
             </div>
           ) : (
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <div className="flex justify-center">
               <Link
                 href="/login"
                 className="rounded-lg bg-orange-600 px-8 py-3 text-center font-medium text-white transition hover:bg-orange-700"
               >
-                Sign In
-              </Link>
-              <Link
-                href="/register"
-                className="rounded-lg border border-orange-600 px-8 py-3 text-center font-medium text-orange-600 transition hover:bg-orange-50"
-              >
-                Request Account
+                Sign In with Google
               </Link>
             </div>
           )}
