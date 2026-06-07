@@ -23,7 +23,7 @@ export default async function StudentLevelPage({ params }: Props) {
   })
 
   const levelClassIds = studentClasses
-    .filter((sc) => sc.class.levelId === level.id)
+    .filter((sc: { class: { levelId: string; id: string } }) => sc.class.levelId === level.id)
     .map((sc) => sc.class.id)
 
   if (levelClassIds.length === 0) notFound()
