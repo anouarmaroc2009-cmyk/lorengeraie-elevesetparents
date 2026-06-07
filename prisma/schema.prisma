@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  fullName     String   @map("full_name")
+  avatarUrl    String?  @map("avatar_url")
+  role         Role     @default(STUDENT)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  teacher       Teacher?
+  studentClasses StudentClass[]
+  grades        Grade[]
+
+  @@map("users")
+}
+
+model Teacher {
+  id      String @id @default(cuid())
+  userId  String @unique @map("user_id")
+  slug    String @unique
+  bio     String?
+
+  user       User             @relation(fields: [userId], references: [id])
+  levels     TeacherLevel[]
+  classes    TeacherClass[]
+  lessons    Lesson[]
+  exams      Exam[]
+  announcements Announcement[]
+
+  @@map("teachers")
+}
+
+model Level {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  classes     Class[]
+  teachers    TeacherLevel[]
+  lessons     Lesson[]
+  announcements Announcement[]
+  exams       Exam[]
+
+  @@map("levels")
+}
+
+model Class {
+  id        String   @id @default(cuid())
+  levelId   String   @map("level_id")
+  name      String
+  slug      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  level         Level             @relation(fields: [levelId], references: [id])
+  teachers      TeacherClass[]
+  students      StudentClass[]
+  lessons       Lesson[]
+  announcements Announcement[]
+  exams         Exam[]
+
+  @@unique([levelId, slug])
+  @@map("classes")
+}
+
+model TeacherLevel {
+  id        String @id @default(cuid())
+  teacherId String @map("teacher_id")
+  levelId   String @map("level_id")
+
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+  level   Level   @relation(fields: [levelId], references: [id])
+
+  @@unique([teacherId, levelId])
+  @@map("teacher_levels")
+}
+
+model TeacherClass {
+  id        String @id @default(cuid())
+  teacherId String @map("teacher_id")
+  classId   String @map("class_id")
+
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+  class   Class   @relation(fields: [classId], references: [id])
+
+  @@unique([teacherId, classId])
+  @@map("teacher_classes")
+}
+
+model StudentClass {
+  id         String @id @default(cuid())
+  studentId  String @map("student_id")
+  classId    String @map("class_id")
+
+  student User  @relation(fields: [studentId], references: [id])
+  class   Class @relation(fields: [classId], references: [id])
+
+  @@unique([studentId, classId])
+  @@map("student_classes")
+}
+
+model Lesson {
+  id          String    @id @default(cuid())
+  teacherId   String    @map("teacher_id")
+  levelId     String    @map("level_id")
+  classId     String?   @map("class_id")
+  title       String
+  description String?
+  content     Json?
+  attachments Json?
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+  level   Level   @relation(fields: [levelId], references: [id])
+  class   Class?  @relation(fields: [classId], references: [id])
+
+  @@map("lessons")
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  teacherId String   @map("teacher_id")
+  levelId   String   @map("level_id")
+  classId   String?  @map("class_id")
+  title     String
+  body      String
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+  level   Level   @relation(fields: [levelId], references: [id])
+  class   Class?  @relation(fields: [classId], references: [id])
+
+  @@map("announcements")
+}
+
+model Exam {
+  id          String   @id @default(cuid())
+  teacherId   String   @map("teacher_id")
+  levelId     String   @map("level_id")
+  classId     String   @map("class_id")
+  title       String
+  date        DateTime?
+  maxScore    Float    @map("max_score")
+  coefficient Float    @default(1.0)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  teacher Teacher  @relation(fields: [teacherId], references: [id])
+  level   Level    @relation(fields: [levelId], references: [id])
+  class   Class    @relation(fields: [classId], references: [id])
+  grades  Grade[]
+
+  @@map("exams")
+}
+
+model Grade {
+  id        String @id @default(cuid())
+  examId    String @map("exam_id")
+  studentId String @map("student_id")
+  score     Float
+  comment   String?
+
+  exam    Exam @relation(fields: [examId], references: [id])
+  student User @relation(fields: [studentId], references: [id])
+
+  @@unique([examId, studentId])
+  @@map("grades")
+}

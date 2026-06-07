@@ -1,0 +1,9 @@
+{
+  "name": "L'Orangeraie Students",
+  "short_name": "Orangeraie",
+  "description": "School management and e-learning platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ea580c"
+}
