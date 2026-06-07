@@ -1,9 +1,9 @@
 import { PrismaClient } from "@prisma/client"
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3"
+import { PrismaLibSql } from "@prisma/adapter-libsql"
 
 const url = process.env.DATABASE_URL ?? "file:./dev.db"
-const factory = new PrismaBetterSqlite3({ url })
-const prisma = new PrismaClient({ adapter: factory })
+const adapter = new PrismaLibSql({ url })
+const prisma = new PrismaClient({ adapter })
 
 async function main() {
   // Clean existing data
