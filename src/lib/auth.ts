@@ -3,8 +3,24 @@ import Google from "next-auth/providers/google"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "./prisma"
 
+const adapter = PrismaAdapter(prisma)
+const origCreateUser = adapter.createUser!
+adapter.createUser = async (data) => {
+  const existing = await prisma.user.findUnique({ where: { email: data.email! } })
+  if (existing) return { ...existing, id: existing.id, emailVerified: existing.emailVerified ?? null }
+  return prisma.user.create({
+    data: {
+      email: data.email!,
+      fullName: data.name ?? data.email!.split("@")[0],
+      avatarUrl: data.image ?? null,
+      emailVerified: data.emailVerified ?? null,
+      role: "STUDENT",
+    },
+  })
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
@@ -47,11 +63,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.user.role = token.role as string
       session.user.teacherSlug = token.teacherSlug as string | null
       return session
-    },
-    async signIn({ profile }) {
-      if (!profile?.email) return false
-      const user = await prisma.user.findUnique({ where: { email: profile.email } })
-      return !!user
     },
   },
 })
