@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client"
-import { PrismaLibSql } from "@prisma/adapter-libsql"
+import { PrismaNeonHttp } from "@prisma/adapter-neon"
 
-const url = process.env.DATABASE_URL ?? "file:./dev.db"
-const adapter = new PrismaLibSql({ url })
+const connectionString = process.env.DATABASE_URL ?? ""
+const adapter = new PrismaNeonHttp(connectionString, {})
 const prisma = new PrismaClient({ adapter })
 
 async function main() {
